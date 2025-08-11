@@ -25,7 +25,7 @@ class SponsorsController < ApplicationController
   private
 
   def prepare_sponsor_statistics
-    event_sponsors = @sponsor.event_sponsors.includes(event: [:talks, :organisation])
+    event_sponsors = @sponsor.event_sponsors
 
     {
       total_events: @events.size,
@@ -38,8 +38,8 @@ class SponsorsController < ApplicationController
       latest_sponsorship: @events.maximum(:start_date),
       sponsorship_tiers: event_sponsors.group(:tier).count.sort_by { |_, count| -count },
       events_by_organisation: @events.group_by(&:organisation).transform_values(&:count).sort_by { |_, count| -count }.first(5),
-      badges_with_events: event_sponsors.includes(:event).map { |es| [es.badge, es.event] if es.badge.present? }.compact,
-      events_by_size: @events.includes(:talks).group_by { |event| classify_event_size(event) }.transform_values(&:count)
+      badges_with_events: event_sponsors.map { |es| [es.badge, es.event] if es.badge.present? }.compact,
+      events_by_size: @events.group_by { |event| classify_event_size(event) }.transform_values(&:count)
     }
   end
 
